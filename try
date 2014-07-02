@@ -105,3 +105,4 @@ cp $iso.png ../
 echo "<meta http-equiv=\"refresh\" content=\"1;url=../try1.html\">"
 echo "Processing your Figure:"
 echo "<pre>"
+ 
