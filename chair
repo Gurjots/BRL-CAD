@@ -2,6 +2,7 @@
 
 echo Content-type: text/html
 echo
+echo "<pre>"
 
 # removing old files.
 rm -f c.g
@@ -9,6 +10,9 @@ rm -f rt*
 rm -f *.pix
 rm -f ../cgi-images/*
 
+front=frontview
+side=sideview
+top=topview
 iso=isoview
 
 cat <<EOF | env /usr/brlcad/dev-7.25.0/bin//mged -c c.g
@@ -38,35 +42,80 @@ r reg u leg1 u leg2 u leg3 u leg4 u leg5 u leg6 u leg7 u leg8 u leg9 u leg10 u c
 r reg1 u reg - par1 - par2 - par3 - par4
 r reg2 u sur2 u sur4 
 mater reg1 plastic 164 96 38 0
-mater reg2 plastic 250 80 50 0
+mater reg2 plastic 122 164 220 0
 B reg1 reg2
+ae 270 90 0
+saveview $front
+ae 180 0 90
+saveview $side
+ae 90 0 180
+saveview $top
 ae 30 60 -120
 saveview $iso
 EOF
 
-sed '2cenv /usr/brlcad/dev-7.25.0//bin/rt -M \\' $iso > tempFile1
+sed '2cenv /usr/brlcad/dev-7.25.0//bin/rt -M \\' $front > tempFile1
+sed '2cenv /usr/brlcad/dev-7.25.0//bin/rt -M \\' $side > tempFile2
+sed '2cenv /usr/brlcad/dev-7.25.0//bin/rt -M \\' $top > tempFile3
+sed '2cenv /usr/brlcad/dev-7.25.0//bin/rt -M \\' $iso > tempFile4
 
+rm $front
+rm $side
+rm $top
 rm $iso
 
-mv tempFile1 $iso
+mv tempFile1 $front
+mv tempFile2 $side
+mv tempFile3 $top
+mv tempFile4 $iso
 
 # give executable permissions to raytrace file.
+chmod 777 $front
+chmod 777 $side
+chmod 777 $top
 chmod 777 $iso
 
 # executing raytrace file. This will produce raw image in .pix format
 # and a log
 #file.
-sh $iso
+./$front
+./$side
+./$top
+./$iso
 
 # converting .pix file to png image using BRLCAD commands.
-env /usr/brlcad/dev-7.25.0//bin/pix-png  < $iso.pix > $iso.png
+env /usr/brlcad/dev-7.25.0//bin/pix-png < $front.pix > $front.png
+env /usr/brlcad/dev-7.25.0//bin/pix-png < $side.pix > $side.png
+env /usr/brlcad/dev-7.25.0//bin/pix-png < $top.pix > $top.png
+env /usr/brlcad/dev-7.25.0//bin/pix-png < $iso.pix > $iso.png
 
+chmod 777 $front.png
+chmod 777 $side.png
+chmod 777 $top.png
 chmod 777 $iso.png
 
+cp $front.png ../cgi-images/
+cp $side.png ../cgi-images/
+cp $top.png ../cgi-images/
 cp $iso.png ../cgi-images/
 
 # open png image in a frame buffer. Currently not required.
 #env /usr/brlcad/dev-7.25.0//bin/png-fb $rt.png
 
 
-echo "<html><head></head><body><img src=\"../cgi-images/isoview.png\"></body></html>"
+#echo "<html><head></head><body><img src=\"../cgi-images/isoview.png\"></body></html>"
+echo "<img src = ../cgi-images/$front.png>"
+
+echo "<h1>front</h1>"
+
+echo "<img src = ../cgi-images/$side.png>"
+
+echo "<h1>side</h1>"
+
+echo "<img src = ../cgi-images/$top.png>"
+
+echo "<h1>top</h1>"
+
+echo "<img src = ../cgi-images/$iso.png>"
+
+echo "<h1>iso</h1>"
